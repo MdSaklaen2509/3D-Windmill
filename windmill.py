@@ -3,19 +3,11 @@ from OpenGL.GLU import *
 from OpenGL.GLUT import *
 import math
 
-width = 900
-height = 650
+width = 1000
+height = 700
 blade_angle = 0
 cam_angle = 0
-
-def Ground():
-    glBegin(GL_QUADS)
-    glColor3f(0.2, 0.65, 0.25)
-    glVertex3f(-250, 0, -250)
-    glVertex3f(250, 0, -250)
-    glVertex3f(250, 0, 250)
-    glVertex3f(-250, 0, 250)
-    glEnd()
+paused = 0
 
 def Box(w, h, d, r, g, b):
     glBegin(GL_QUADS)
@@ -66,6 +58,12 @@ def PyramidRoof(w, h, d, r, g, b):
     glVertex3f(0, h, 0)
     glEnd()
 
+def PlaceIsland():
+    glPushMatrix()
+    glTranslatef(0, -25, 0)
+    Box(220, 25, 220, 0.2, 0.65, 0.25)
+    glPopMatrix()
+
 def PlacePowerHouse(x, y, z):
     glPushMatrix()
     glTranslatef(x, y, z)
@@ -102,33 +100,44 @@ def PlaceWindmill(x, y, z):
         glPopMatrix()
     glPopMatrix()
 
+def keyboard(key, x, y):
+    global paused
+    if key == b" " or key == b"p":
+        if paused == 0:
+            paused = 1
+        else:
+            paused = 0
+
 def update(value):
     global blade_angle, cam_angle
-    blade_angle = blade_angle + 3.0
-    cam_angle = cam_angle + 0.01
+    if paused == 0:
+        blade_angle = blade_angle + 3.0
+        cam_angle = cam_angle + 0.01
     glutPostRedisplay()
     glutTimerFunc(15, update, 0)
 
 def main():
-    Ground()
-    PlacePowerHouse(-90, 0, 0)
-    PlaceTree(-170, 0, 80)
-    PlaceTree(160, 0, 70)
+    PlaceIsland()
+    PlacePowerHouse(-85, 0, 0)
+    PlaceTree(-145, 0, 80)
+    PlaceTree(145, 0, 75)
     PlaceWindmill(70, 0, 0)
 
 def showScreen():
+    w = glutGet(GLUT_WINDOW_WIDTH)
+    h = glutGet(GLUT_WINDOW_HEIGHT)
     glClearColor(0.53, 0.81, 0.98, 1.0)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
     glEnable(GL_DEPTH_TEST)
-    glViewport(0, 0, width, height)
+    glViewport(0, 0, w, h)
     glMatrixMode(GL_PROJECTION)
     glLoadIdentity()
-    gluPerspective(60, width / height, 1, 1000)
+    gluPerspective(55, w / h, 1, 1500)
     glMatrixMode(GL_MODELVIEW)
     glLoadIdentity()
-    eye_x = 380 * math.sin(cam_angle)
-    eye_z = 380 * math.cos(cam_angle)
-    gluLookAt(eye_x, 170, eye_z, 0, 60, 0, 0, 1, 0)
+    eye_x = 550 * math.sin(cam_angle)
+    eye_z = 550 * math.cos(cam_angle)
+    gluLookAt(eye_x, 180, eye_z, 0, 45, 0, 0, 1, 0)
     main()
     glutSwapBuffers()
 
@@ -136,7 +145,8 @@ glutInit()
 glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE | GLUT_DEPTH)
 glutInitWindowSize(width, height)
 glutInitWindowPosition(100, 50)
-glutCreateWindow(b"3D Windmill Energy Park - OpenGL GLU")
+glutCreateWindow(b"3D Windmill Energy Park - Press SPACE or P to Pause/Play")
 glutDisplayFunc(showScreen)
+glutKeyboardFunc(keyboard)
 glutTimerFunc(0, update, 0)
 glutMainLoop()
